@@ -54,18 +54,24 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			const html5QrCode = new Html5Qrcode('qr-reader');
 			scannerRef.current = html5QrCode;
 
+			const constraints = {
+				facingMode: { exact: "environment" },
+				width: { ideal: 4096 },
+				height: { ideal: 2160 }
+			}
+
 			const config = {
 				fps: 10,
 				qrbox: 250,
 			};
 
-			html5QrCode
-				.start(
-					{ facingMode: 'environment' },
-					config,
-					onScanSuccess,
-					onScanFailure
-				)
+			html5QrCode.start(
+				constraints,
+				//{ facingMode: { exact: "environment" } },
+				config,
+				onScanSuccess,
+				onScanFailure
+			)
 				.catch(err => {
 					console.error('Error starting QR scanner:', err);
 				});
