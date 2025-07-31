@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Html5QrcodeScanner } from 'html5-qrcode'; // Import QR scanner
+//import { Html5QrcodeScanner } from 'html5-qrcode'; // Import QR scanner
+import { Html5Qrcode } from 'html5-qrcode'; // Use Html5Qrcode class instead
 import { useNavigate } from 'react-router-dom';
 
 import Header from '@/pages/Header/Header';
@@ -14,11 +15,13 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	const [referralCode, setReferralCode] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isScanning, setIsScanning] = useState(false); // Track scanning state
-	const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+	//const scannerRef = useRef<Html5QrcodeScanner | null>(null); <-- original useRef
+	const scannerRef = useRef<Html5Qrcode | null>(null); // replaced above line to use right class
 	const readerRef = useRef<HTMLDivElement | null>(null);
 
 	// Effect to initialize the QR scanner
 	// This effect runs when the component mounts and when isScanning changes
+	/* Original useEffect code:
 	useEffect(() => {
 		if (isScanning && readerRef.current) {
 			const config = { fps: 10, qrbox: 250 };
@@ -43,8 +46,55 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			}
 		};
 	}, [isScanning]);
+	*/
+
+	// New effect to initialize QR scanner (7/29):
+	useEffect(() => {
+		if (isScanning && readerRef.current) {
+			const html5QrCode = new Html5Qrcode('qr-reader');
+			scannerRef.current = html5QrCode;
+
+			const config = {
+				fps: 10,
+				qrbox: 250,
+			};
+
+			html5QrCode
+				.start(
+					{ facingMode: 'environment' },
+					config,
+					onScanSuccess,
+					onScanFailure
+				)
+				.catch(err => {
+					console.error('Error starting QR scanner:', err);
+				});
+		}
+
+		// Cleanup
+		return () => {
+			if (scannerRef.current) {
+				if (scannerRef.current.isScanning) {
+					scannerRef.current
+						.stop()
+						.then(() => scannerRef.current?.clear())
+						.catch(err =>
+							console.warn('Failed to stop/clear QR scanner:', err)
+						);
+				} else {
+					// safe fallback, trying to clear without stopping
+					try {
+						scannerRef.current.clear();
+					} catch (err) {
+						console.warn('Failed to clear QR scanner:', err);
+					}
+				}
+			}
+		};
+	}, [isScanning]);
 
 	// Function to handle logout
+	/* Original onScanSuccess function:
 	const onScanSuccess = (decodedText: string) => {
 		if (scannerRef.current) {
 			scannerRef.current
@@ -66,6 +116,38 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			alert('Invalid QR Code. Please scan a valid link.');
 		}
 	};
+	*/
+
+	// my new onScanSuccess (7/29):
+	const onScanSuccess = (decodedText: string) => {
+		if (scannerRef.current) {
+			scannerRef.current
+				.stop()
+				.then(() => {
+					try {
+						scannerRef.current?.clear();
+						console.log('Scanner stopped and cleared after successful scan');
+					} catch (clearError) {
+						console.warn('Failed to clear QR scanner:', clearError);
+					}
+				})
+				.catch(error =>
+					console.error('Failed to stop scanner:', error)
+				);
+		}
+		setIsScanning(false);
+
+
+		// Check if the scanned text is a valid URL (?)
+		try {
+			const url = new URL(decodedText);
+			window.location.href = url.href;
+		} catch (error) {
+			alert('Invalid QR Code. Please scan a valid link.');
+		}
+	};
+
+
 
 	// Function to handle QR code scan failure
 	const onScanFailure = (error: string) => {
@@ -90,7 +172,7 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			if (!response.ok) {
 				alert(
 					data.message ||
-						'Invalid or already used referral code. Please try again.'
+					'Invalid or already used referral code. Please try again.'
 				);
 				setLoading(false);
 				return;
