@@ -51,31 +51,59 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	// New effect to initialize QR scanner (7/29):
 	useEffect(() => {
 		if (isScanning && readerRef.current) {
-			const html5QrCode = new Html5Qrcode('qr-reader');
+			const html5QrCode = new Html5Qrcode('qr-reader') as any;
 			scannerRef.current = html5QrCode;
 
-			const constraints = {
-				facingMode: { exact: "environment" },
-				width: { ideal: 4096 },
-				height: { ideal: 2160 }
-			}
-
-			const config = {
-				fps: 10,
-				qrbox: 250,
+			const constraints: MediaStreamConstraints = {
+				video: {
+					facingMode: { exact: "environment" },
+				}
 			};
 
-			html5QrCode.start(
-				constraints,
-				//{ facingMode: { exact: "environment" } },
-				config,
-				onScanSuccess,
-				onScanFailure
-			)
-				.catch(err => {
-					console.error('Error starting QR scanner:', err);
+			navigator.mediaDevices.getUserMedia(constraints)
+				.then((stream) => {
+					return html5QrCode.startFromCameraStream( // does not exist??
+						stream,
+						{
+							fps: 10,
+							qrbox: 250,
+						},
+						onScanSuccess,
+						onScanFailure
+					);
+				})
+				.catch((err) => {
+					console.error("Camera access failed or back camera not available:", err);
+					alert("Could not access the back camera. Please ensure permissions are granted.");
+					setIsScanning(false);
 				});
 		}
+
+		/*
+		const constraints = {
+			facingMode: { exact: "environment" },
+			width: { ideal: 4096 },
+			height: { ideal: 2160 }
+		};
+
+		const config = {
+			fps: 10,
+			qrbox: 250,
+		};
+		
+
+		html5QrCode.start(
+			constraints,
+			//{ facingMode: { exact: "environment" } },
+			config,
+			onScanSuccess,
+			onScanFailure
+		)
+			.catch(err => {
+				console.error('Error starting QR scanner:', err);
+			});
+	}
+	*/
 
 		// Cleanup
 		return () => {
