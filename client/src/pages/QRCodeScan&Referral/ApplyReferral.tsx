@@ -10,6 +10,8 @@ import '@/styles/ApplyReferral.css';
 
 import { LogoutProps } from '@/types/AuthProps';
 
+console.log("Deployed changes to Azure.");
+
 export default function ApplyReferral({ onLogout }: LogoutProps) {
 	const navigate = useNavigate();
 	const [referralCode, setReferralCode] = useState('');
@@ -48,11 +50,69 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	}, [isScanning]);
 	*/
 
-	// New effect to initialize QR scanner (7/29):
+	// New effect 7/31: ====================================================================
+	useEffect(() => {
+		if (isScanning && readerRef.current) {
+			const html5QrCode = new Html5Qrcode('qr-reader');
+			scannerRef.current = html5QrCode;
+
+			const config = {
+				fps: 10,
+				videoConstraints: {
+					facingMode: { ideal: "environment" }, // or just "environment"
+					width: { ideal: 1280 },
+					height: { ideal: 720 }  
+				}
+			};
+
+			html5QrCode.start(
+				{},      // cameraIdOrConfig is empty object: tells html5-qrcode to use constraints
+				config,
+				onScanSuccess,
+				onScanFailure
+			)
+				.catch((err) => {
+					console.error("Failed to start scanning:", err);
+					alert("Could not access the camera. Please ensure permissions are granted.");
+					setIsScanning(false);
+				});
+		}
+
+		return () => {
+			if (scannerRef.current) {
+				if (scannerRef.current.isScanning) {
+					scannerRef.current
+						.stop()
+						.then(() => scannerRef.current?.clear())
+						.catch(err =>
+							console.warn('Failed to stop/clear QR scanner:', err)
+						);
+				} else {
+					try {
+						scannerRef.current.clear();
+					} catch (err) {
+						console.warn('Failed to clear QR scanner:', err);
+					}
+				}
+			}
+		};
+	}, [isScanning]);
+
+
+	// New effect to initialize QR scanner before 7/31:
+	/*
 	useEffect(() => {
 		if (isScanning && readerRef.current) {
 			const html5QrCode = new Html5Qrcode('qr-reader') as any;
 			scannerRef.current = html5QrCode;
+
+			const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+
+			if (supportedConstraints.facingMode) {
+				console.log("'facingMode' is supported on this browser/device.");
+			} else {
+				console.warn("'facingMode' is NOT supported on this browser/device.");
+			}
 
 			const constraints: MediaStreamConstraints = {
 				video: {
@@ -103,7 +163,6 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 				console.error('Error starting QR scanner:', err);
 			});
 	}
-	*/
 
 		// Cleanup
 		return () => {
@@ -126,6 +185,7 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			}
 		};
 	}, [isScanning]);
+	*/
 
 	// Function to handle logout
 	/* Original onScanSuccess function:
