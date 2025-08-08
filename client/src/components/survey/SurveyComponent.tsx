@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+// new (issue 32): import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 
@@ -37,6 +37,8 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 		userDecisionTimeout: 5000
 	});
 
+	//console.log('ref in URL:', searchParams.get('ref')); // see if it ever shows
+
 	useEffect(() => {
 		// 1) Load from localStorage
 		const storedId = localStorage.getItem('employeeId');
@@ -44,13 +46,13 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 		if (storedId) setEmployeeId(storedId);
 		if (storedName) setEmployeeName(storedName);
 
-		// 2) Check if referral is passed via location.state
+		//2) Check if referral is passed via location.state
 		const codeFromState = location.state?.referralCode;
 		if (codeFromState) {
 			setReferredByCode(codeFromState);
 			validateReferralCode(codeFromState);
 			return; // Skip reading from URL if we have it in state
-		}
+		} 
 
 		// 3) Otherwise, check the URL query param "?ref=XXXX"
 		const codeInUrl = searchParams.get('ref');
@@ -59,6 +61,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 			validateReferralCode(codeInUrl);
 		}
 	}, [location.state, searchParams]);
+	// removed [location.state, searchParams] from above to try to fix issue #32
 
 	async function validateReferralCode(code: string) {
 		try {

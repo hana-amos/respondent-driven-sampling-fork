@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 //import { Html5QrcodeScanner } from 'html5-qrcode'; // Import QR scanner
 import { Html5Qrcode } from 'html5-qrcode'; // Use Html5Qrcode class instead
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // does this even work??
 
 import Header from '@/pages/Header/Header';
 
@@ -17,7 +17,7 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	const [referralCode, setReferralCode] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isScanning, setIsScanning] = useState(false); // Track scanning state
-	//const scannerRef = useRef<Html5QrcodeScanner | null>(null); <-- original useRef
+	//const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 	const scannerRef = useRef<Html5Qrcode | null>(null); // replaced above line to use right class
 	const readerRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,7 +50,7 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	}, [isScanning]);
 	*/
 
-	// New effect 7/31: ====================================================================
+	//New effect: ====================================================================
 	useEffect(() => {
 		if (isScanning && readerRef.current) {
 			const html5QrCode = new Html5Qrcode('qr-reader');
@@ -97,95 +97,6 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 			}
 		};
 	}, [isScanning]);
-
-
-	// New effect to initialize QR scanner before 7/31:
-	/*
-	useEffect(() => {
-		if (isScanning && readerRef.current) {
-			const html5QrCode = new Html5Qrcode('qr-reader') as any;
-			scannerRef.current = html5QrCode;
-
-			const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
-
-			if (supportedConstraints.facingMode) {
-				console.log("'facingMode' is supported on this browser/device.");
-			} else {
-				console.warn("'facingMode' is NOT supported on this browser/device.");
-			}
-
-			const constraints: MediaStreamConstraints = {
-				video: {
-					facingMode: { exact: "environment" },
-				}
-			};
-
-			navigator.mediaDevices.getUserMedia(constraints)
-				.then((stream) => {
-					return html5QrCode.startFromCameraStream( // does not exist??
-						stream,
-						{
-							fps: 10,
-							qrbox: 250,
-						},
-						onScanSuccess,
-						onScanFailure
-					);
-				})
-				.catch((err) => {
-					console.error("Camera access failed or back camera not available:", err);
-					alert("Could not access the back camera. Please ensure permissions are granted.");
-					setIsScanning(false);
-				});
-		}
-
-		/*
-		const constraints = {
-			facingMode: { exact: "environment" },
-			width: { ideal: 4096 },
-			height: { ideal: 2160 }
-		};
-
-		const config = {
-			fps: 10,
-			qrbox: 250,
-		};
-		
-
-		html5QrCode.start(
-			constraints,
-			//{ facingMode: { exact: "environment" } },
-			config,
-			onScanSuccess,
-			onScanFailure
-		)
-			.catch(err => {
-				console.error('Error starting QR scanner:', err);
-			});
-	}
-
-		// Cleanup
-		return () => {
-			if (scannerRef.current) {
-				if (scannerRef.current.isScanning) {
-					scannerRef.current
-						.stop()
-						.then(() => scannerRef.current?.clear())
-						.catch(err =>
-							console.warn('Failed to stop/clear QR scanner:', err)
-						);
-				} else {
-					// safe fallback, trying to clear without stopping
-					try {
-						scannerRef.current.clear();
-					} catch (err) {
-						console.warn('Failed to clear QR scanner:', err);
-					}
-				}
-			}
-		};
-	}, [isScanning]);
-	*/
 
 	// Function to handle logout
 	/* Original onScanSuccess function:
@@ -242,7 +153,6 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 	};
 
 
-
 	// Function to handle QR code scan failure
 	const onScanFailure = (error: string) => {
 		console.warn(`QR Code scan error: ${error}`);
@@ -272,7 +182,8 @@ export default function ApplyReferral({ onLogout }: LogoutProps) {
 				return;
 			}
 
-			navigate('/survey', { state: { referralCode } });
+			//navigate('/survey', { state: { referralCode } });
+			navigate(`/survey?ref=${referralCode}`); // added referral code url param
 		} catch (error) {
 			console.error('Error validating referral code:', error);
 			alert('Server error. Please try again.');
