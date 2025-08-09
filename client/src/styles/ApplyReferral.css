@@ -80,7 +80,7 @@ p {
 
 /* Cancel button styles */
 .cancel-btn {
-    background-color: violet; /* test to see if azure deployment works*/
+    background-color: violet; /* makes sure my azure deployment went through*/
     color: black;
     border: 1px solid #969696;
     padding: 10px 20px;
