@@ -146,55 +146,6 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 				},
 				// Pre-Screening Respondent
 				{
-					name: 'pre-screen-2',
-					title: 'Pre-Screening Questions - Respondent',
-					elements: [
-						{
-							type: 'html',
-							name: 'respondent-pre-screening',
-							html: '<div><strong>Please ask the following questions to the respondent.</strong></div>'
-						},
-						{
-							type: 'text',
-							name: 'phone_number',
-							title: "Enter the respondent's phone number (123-456-7890)",
-							validators: [
-								{
-									type: 'regex',
-									text: 'Please enter a valid phone number.',
-									regex: '^\\d{3}-\\d{3}-\\d{4}$'
-								}
-							]
-						},
-						{
-							type: 'text',
-							name: 'email',
-							title: "Enter the respondent's email",
-							validators: [
-								{
-									type: 'regex',
-									text: 'Please enter a valid email address.',
-									regex: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
-								}
-							]
-						},
-						{
-							type: 'radiogroup',
-							name: 'email_consent',
-							title: 'Can we email the respondent regarding survey results?',
-							choices: ['Yes', 'No'],
-							isRequired: true
-						},
-						{
-							type: 'radiogroup',
-							name: 'phone_consent',
-							title: 'Can we message the respondent regarding survey results?',
-							choices: ['Yes', 'No'],
-							isRequired: true
-						}
-					]
-				},
-				{
 					name: 'consent_page',
 					title: 'Consent Confirmation',
 					elements: [
@@ -239,6 +190,58 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 						}
 					]
 				},
+				{
+					name: 'pre-screen-2',
+					title: 'Pre-Screening Questions - Respondent',
+					visibleIf: "{consent_given} = 'Yes'",
+					elements: [
+						{
+							type: 'html',
+							name: 'respondent-pre-screening',
+							html: '<div><strong>Please ask the following questions to the respondent.</strong></div>'
+						},
+						{
+							type: 'text',
+							name: 'phone_number',
+							//maskType: 'pattern',
+							//maskSettings: { pattern: '999-999-9999'},
+							title: "Enter the respondent's phone number (123-456-7890)",
+							validators: [
+								{
+									type: 'regex',
+									text: 'Please enter a valid phone number.',
+									regex: '^\\d{3}-\\d{3}-\\d{4}$'
+								}
+							]
+						},
+						{
+							type: 'text',
+							name: 'email',
+							title: "Enter the respondent's email",
+							validators: [
+								{
+									type: 'regex',
+									text: 'Please enter a valid email address.',
+									regex: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+								}
+							]
+						},
+						{
+							type: 'radiogroup',
+							name: 'email_consent',
+							title: 'Can we email the respondent regarding survey results?',
+							choices: ['Yes', 'No'],
+							isRequired: true
+						},
+						{
+							type: 'radiogroup',
+							name: 'phone_consent',
+							title: 'Can we message the respondent regarding survey results?',
+							choices: ['Yes', 'No'],
+							isRequired: true
+						}
+					]
+				},
 				// Break Page
 				{
 					name: 'survey-break',
@@ -248,6 +251,12 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 							type: 'html',
 							name: 'break-message',
 							html: '<div><h3>The survey starts after this page. Any question beyond this point is for the respondent to answer. HUD-required questions are marked with an asterisk (*).</h3></div>'
+						},
+						{
+							type: 'text',
+							name: 'break-passed',
+							visible: false, // hidden
+							defaultValue: 'Yes' // gets set when this page loads
 						}
 					]
 				},
@@ -256,7 +265,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'personal_info',
 					title: 'Personal Info',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{break-passed} = 'Yes'",
 					elements: [
 						{
 							type: 'text',
@@ -320,7 +329,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'network_questions',
 					title: 'Network Module',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{break-passed} = 'Yes'",
 					elements: [
 						{
 							type: 'text',
@@ -390,7 +399,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'hud_history',
 					title: 'HUD Module – History and Living Situation',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'dropdown',
@@ -553,7 +562,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'demographics',
 					title: 'Demographics',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'dropdown',
@@ -664,7 +673,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'medical',
 					title: 'Medical/Disability Module',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'dropdown',
@@ -717,7 +726,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'household',
 					title: 'Household Information',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'paneldynamic',
@@ -861,7 +870,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'mobility_resource',
 					title: 'Mobility/Resource Module',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'text',
@@ -930,9 +939,176 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 							]
 						},
 						{
-							type: 'text',
-							name: 'last_stable_loc',
-							title: 'Where did you live the last time you had stable housing such as an apartment or a house?'
+							type: 'dropdown',
+							name: 'last_stable_loc', // last_stable_loc_region
+							title: 'Where did you live the last time you had stable housing such as an apartment or a house?',
+							choices: [
+								{ value: 'king', text: 'King County' },
+								{ value: 'wa', text: 'Washington State County (outside of King County)' },
+								{ value: 'us', text: "United States (state outside of Washington State)" },
+								"Outside the United States",
+								"Choose not to answer",
+								"Do not know"
+							]
+						},
+						{
+							type: 'dropdown',
+							name: 'last_stable_loc_king', // think of a better name
+							title: 'Please specify:',
+							visibleIf: "{last_stable_loc} = 'king'",
+							choices: [
+								'Algona',
+								'Auburn',
+								'Bear Creek/Sammamish (Unincorporated)',
+								'Beaux Arts',
+								'Bellevue',
+								'Black Diamond',
+								'Bothell',
+								'Burien',
+								'Carnation',
+								'Clyde Hill',
+								'Covington',
+								'Data not collected',
+								'Des Moines',
+								'Duvall',
+								'East Federal Way (Unincorporated)',
+								'East Renton (Unincorporated)',
+								'Enumclaw',
+								'Fairwood (Unincorporated)',
+								'Federal Way',
+								'Four Creeks/Tiger Mountain (Unincorporated)',
+								'Hunts Point',
+								'Issaquah',
+								'Kenmore',
+								'Kent',
+								'Kirkland',
+								'Lake Forest Park',
+								'Maple Valley',
+								'Medina',
+								'Mercer Island',
+								'Milton',
+								'Newcastle',
+								'Normandy Park',
+								'North Bend',
+								'North Highline (Unincorporated)',
+								'Pacific',
+								'Renton',
+								'Sammamish',
+								'Sea Tac',
+								'Seattle',
+								'Shoreline',
+								'Skykomish',
+								'Snoqualmie',
+								'Redmond',
+								'Snoqualmie Valley/Northeast',
+								'King County (Unincorporated)',
+								'Southeast King County (Unincorporated)',
+								'Tukwila',
+								// To be continued (Unincorporated King County)
+							]
+						},
+						{
+							type: 'dropdown',
+							name: 'last_stable_loc_wa', // think of a better name
+							title: 'Please specify:',
+							visibleIf: "{last_stable_loc} = 'wa'",
+							choices: [
+								'Adams',
+								'Asotin',
+								'Benton',
+								'Chelan',
+								'Clallam',
+								'Clark',
+								'Columbia',
+								'Cowlitz',
+								'Douglas',
+								'Ferry',
+								'Franklin',
+								'Garfield',
+								'Grant',
+								'Grays Harbor',
+								'Island',
+								'Jefferson',
+								'Kitsap',
+								'Kittititas',
+								'Klickitat',
+								'Lewis',
+								'Lincoln',
+								'Mason',
+								'Okanogan',
+								'Pacific',
+								'Pend Orellie',
+								'Pierce',
+								'San Juan (County)',
+								'Skagit',
+								'Skamania',
+								'Snohomish',
+								'Spokane',
+								'Stevens',
+								'Thurston',
+								'Wahkiakum',
+								'Walla Walla (County)',
+								'Whatcom',
+								'Whitman',
+								'Yakima (County)'
+							]
+						},
+						{
+							type: 'dropdown',
+							name: 'last_stable_loc_us', // think of a better name
+							title: 'Please specify:',
+							visibleIf: "{last_stable_loc} = 'us'",
+							choices: [
+								'Alabama',
+								'Alaska',
+								'Arizona',
+								'Arkansas',
+								'California',
+								'Colorado',
+								'Connecticut',
+								'Delaware',
+								'Florida',
+								'Georgia',
+								'Hawaii',
+								'Idaho',
+								'Illinois',
+								'Indiana',
+								'Iowa',
+								'Kansas',
+								'Kentucky',
+								'Louisiana',
+								'Maine',
+								'Maryland',
+								'Massachusetts',
+								'Michigan',
+								'Minnesota',
+								'Mississippi',
+								'Missouri',
+								'Montana',
+								'Nebraska',
+								'Nevada',
+								'New Hampshire',
+								'New Jersey',
+								'New Mexico',
+								'New York',
+								'North Carolina',
+								'North Dakota',
+								'Ohio',
+								'Oklahoma',
+								'Oregon',
+								'Pennsylvania',
+								'Rhode Island',
+								'South Carolina',
+								'South Dakota',
+								'Tennessee',
+								'Texas',
+								'Utah',
+								'Vermont',
+								'Virginia',
+								'West Virginia',
+								'Wisconsin',
+								'Wyoming'
+							]
 						},
 						{
 							type: 'dropdown',
@@ -992,7 +1168,7 @@ const SurveyComponent = ({ onLogout }: LogoutProps) => {
 					name: 'events_conditions',
 					title: 'Events/Conditions Module',
 					visibleIf:
-						"{age_for_consent} = 'Yes' and {consent_given} = 'Yes'",
+						"{consent_given} = 'Yes'",
 					elements: [
 						{
 							type: 'checkbox',

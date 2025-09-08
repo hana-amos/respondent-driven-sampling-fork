@@ -163,6 +163,31 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+// Test PUT thing for backend to update survey responses
+router.put("/:id/edit-prescreen", async (req, res) => {
+  try {
+    // for perm check 
+    const userRole = req.headers["x-user-role"];
+    const userEmployeeId = req.headers["x-employee-id"];
+
+    const { responses } = req.body;
+
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ message: "Survey not found" });
+    }
+
+    // Update only the responses field
+    survey.responses = responses || survey.responses;
+    await survey.save();
+
+    return res.json({ message: "Survey updated successfully", survey });
+  } catch (error) {
+    console.error("Error updating survey:", error);
+    res.status(500).json({ message: "Server error: Could not update survey" });
+  }
+});
+
 // Validate Referral Code - GET /api/surveys/validate-ref/:code
 // This route checks if a referral code is valid
 // and has not been used yet
